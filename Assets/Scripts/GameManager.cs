@@ -44,4 +44,8 @@ public class GameManager : MonoBehaviour {
     void OnXRModeExited() {
         Debug.Log("[THVR] GameManager::OnXRModeEntered");
     }
+
+    public void Clicked() {
+        Debug.Log("[THVR] GameManager::Clicked");
+    }
 }

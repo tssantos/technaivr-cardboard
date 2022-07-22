@@ -5,10 +5,15 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class XRGazePointer : PointerInputModule {
+    [SerializeField]
+    GameObject selectionProgressIndicator;
 
     PointerEventData pointerEventData;
 
-    GameObject gazedObject;
+    GameObject currGazeTarget = null;
+
+    Coroutine selectionInProgressRoutine;
+    bool selectionInProgress;
 
     public override void Process() {
         HandleLook();
@@ -25,6 +30,36 @@ public class XRGazePointer : PointerInputModule {
         eventSystem.RaycastAll(pointerEventData, raycastResults);
         pointerEventData.pointerCurrentRaycast = FindFirstRaycast(raycastResults);
         ProcessMove(pointerEventData);
+        ProcessSelection(pointerEventData);
     }
+
+    void ProcessSelection(PointerEventData pointerEventData) {
+        if (currGazeTarget != pointerEventData.pointerCurrentRaycast.gameObject) {
+            if (selectionInProgress) {
+                StopCoroutine(selectionInProgressRoutine);
+                EndSelection();
+            }
+            if (pointerEventData.pointerCurrentRaycast.isValid) {
+                selectionInProgressRoutine = StartCoroutine(StartSelection());
+            }
+        }
+        currGazeTarget = pointerEventData.pointerCurrentRaycast.isValid ?
+            pointerEventData.pointerCurrentRaycast.gameObject :
+            null;
+    }
+
+    IEnumerator StartSelection() {
+        selectionInProgress = true;
+        selectionProgressIndicator.SetActive(true);
+        yield return new WaitForSecondsRealtime(2f);
+        EndSelection();
+        currGazeTarget.GetComponent<Button>()?.onClick.Invoke();
+    }
+
+    void EndSelection() {
+        selectionInProgress = false;
+        selectionProgressIndicator.SetActive(false);
+    }
+
 }
     
